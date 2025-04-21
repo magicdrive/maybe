@@ -1,0 +1,38 @@
+[subcommand]
+# Which subcommand this config should use
+use = "watch"
+
+[subcommand.watch]
+# Basic process configuration
+pre_command = "echo go test {}"
+command = "go test {}"
+#post_command = "echo post-command done."
+working_dir = "./"
+
+# command args
+placeholder = "{}"
+absolute_path = true
+args_path_style = "dirname"
+
+# Timing and retry
+timeout = "5s"
+delay = "0s"
+retry = 1
+check_content_diff = false
+
+# Watch target configuration
+watch_dir = ["./"]
+pattern_regex = ".*"
+include_ext = [".go", ".mod"]
+#ignore_regex = "_test.go$"
+exclude_ext = [".tmp"]
+exclude_dir = [".git", "tmp", "vendor", ".enma"]
+default_ignores = "minimal"
+enmaignore = [".enmaignore"]
+
+# File paths
+## logs = "" # should be logging off.
+logs = "./.enma/log/enma_watch.log"
+## pid = "" # should be pid output off.
+pid = "./.enma/run/enma_watch.pid"
+
