@@ -1,4 +1,4 @@
-# Makefile for enma
+# Makefile for maybe
 
 # Variables
 BUILD_DIR = $(CURDIR)/build
