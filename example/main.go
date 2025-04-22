@@ -16,7 +16,49 @@ func divide(x, y int) result.Result[int, error] {
 	return result.Ok[int, error](x / y)
 }
 
-func main() {
+func DemoMatchIf() {
+	fmt.Println("\n=== MatchIf ===")
+
+	m := maybe.Some(30)
+	maybe.MatchIf(m, []maybe.MatchCase[int]{
+		{Cond: func(x int) bool { return x > 100 }, Then: func(x int) {
+			fmt.Println("Too large:", x)
+		}},
+		{Cond: func(x int) bool { return x > 10 }, Then: func(x int) {
+			fmt.Println("Matched OK:", x)
+		}},
+	}, func() {
+		fmt.Println("No match or None")
+	})
+
+	mp := maybe.SomePrimitive(5)
+	maybe.MatchIfPrimitive(mp, []maybe.MatchPrimitiveCase[int]{
+		{Cond: func(x int) bool { return x > 10 }, Then: func(x int) {
+			fmt.Println("Primitive large:", x)
+		}},
+		{Cond: func(x int) bool { return x < 10 }, Then: func(x int) {
+			fmt.Println("Primitive small:", x)
+		}},
+	}, func() {
+		fmt.Println("Primitive fallback")
+	})
+
+	res := result.Ok[int, error](11)
+	result.MatchOkIf(res, []result.MatchOkCase[int, error]{
+		{Cond: func(x int) bool { return x > 100 }, Then: func(x int) {
+			fmt.Println("Result: huge", x)
+		}},
+		{Cond: func(x int) bool { return x > 10 }, Then: func(x int) {
+			fmt.Println("Result: fine", x)
+		}},
+	}, func(e error) {
+		fmt.Println("Error happened:", e)
+	}, func() {
+		fmt.Println("No match in Result")
+	})
+}
+
+func DemoMaybe() {
 	fmt.Println("=== Maybe ===")
 
 	// Some / Map / Match
@@ -58,7 +100,13 @@ func main() {
 		"none",
 	)
 	fmt.Println("Fold result:", folded)
+}
 
+func DemoMaybePrimitive() {
+
+}
+
+func DemoResult() {
 	fmt.Println("\n=== Result ===")
 
 	// Tap → Map → UnwrapOr
@@ -92,43 +140,4 @@ func main() {
 		func(e error) string { return "err: " + e.Error() },
 	)
 	fmt.Println("Try folded:", foldedTry)
-
-	fmt.Println("\n=== MaybePrimitive ===")
-
-	// SomePrimitive / UnwrapOr
-	mp := maybe.SomePrimitive(42)
-	fmt.Println("Primitive value:", mp.UnwrapOr(0)) // → 42
-
-	// FilterPrimitive
-	filteredPrim := maybe.FilterPrimitive(mp, func(x int) bool { return x > 40 })
-	fmt.Println("Filtered primitive:", filteredPrim.UnwrapOr(-1)) // → 42
-
-	// TapPrimitive
-	maybe.TapPrimitive(filteredPrim, func(x int) {
-		fmt.Println("Tapped primitive:", x)
-	})
-
-	// MapPrimitive
-	mappedPrim := maybe.MapPrimitive(mp, func(x int) string {
-		return fmt.Sprintf("val=%d", x)
-	})
-	fmt.Println("Mapped primitive:", mappedPrim.UnwrapOr("none"))
-
-	// FoldPrimitive
-	foldedPrim := maybe.FoldPrimitive(mp,
-		func(x int) string { return fmt.Sprintf("prim:%d", x) },
-		"none",
-	)
-	fmt.Println("Fold primitive:", foldedPrim)
-
-	// FromValuePrimitive
-	fromVal := maybe.FromValuePrimitive(999, true)
-	fmt.Println("FromValuePrimitive:", fromVal.UnwrapOr(-1)) // → 999
-
-	// TryPrimitive
-	tryPrim := maybe.TryPrimitive(func() (int, error) {
-		return strconv.Atoi("123")
-	})
-	fmt.Println("TryPrimitive:", tryPrim.UnwrapOr(-1)) // → 123
-
 }

@@ -106,6 +106,63 @@ func divide(x, y int) (int, error) {
 }
 ```
 
+### 🧠 Conditional Match (MatchIf)
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+
+	"github.com/magicdrive/maybe"
+	"github.com/magicdrive/maybe/result"
+)
+
+func main() {
+	// Maybe[T] - MatchIf
+	m := maybe.Some(30)
+	maybe.MatchIf(m, []maybe.MatchCase[int]{
+		{Cond: func(x int) bool { return x > 100 }, Then: func(x int) {
+			fmt.Println("Too large:", x)
+		}},
+		{Cond: func(x int) bool { return x > 10 }, Then: func(x int) {
+			fmt.Println("Matched OK:", x)
+		}},
+	}, func() {
+		fmt.Println("No match or None")
+	})
+
+	// MaybePrimitive[T] - MatchIfPrimitive
+	mp := maybe.SomePrimitive(5)
+	maybe.MatchIfPrimitive(mp, []maybe.MatchPrimitiveCase[int]{
+		{Cond: func(x int) bool { return x > 10 }, Then: func(x int) {
+			fmt.Println("Primitive large:", x)
+		}},
+		{Cond: func(x int) bool { return x < 10 }, Then: func(x int) {
+			fmt.Println("Primitive small:", x)
+		}},
+	}, func() {
+		fmt.Println("Primitive fallback")
+	})
+
+	// Result[T, E] - MatchOkIf
+	r := result.Ok
+	result.MatchOkIf(r, []result.MatchOkCase[int, error]{
+		{Cond: func(x int) bool { return x > 100 }, Then: func(x int) {
+			fmt.Println("Result: huge", x)
+		}},
+		{Cond: func(x int) bool { return x > 10 }, Then: func(x int) {
+			fmt.Println("Result: fine", x)
+		}},
+	}, func(e error) {
+		fmt.Println("Error happened:", e)
+	}, func() {
+		fmt.Println("No match in Result")
+	})
+}
+```
+
 ---
 
 ## 🧪 Run Tests
