@@ -9,11 +9,13 @@ Type-safe optional values and result types for Go — inspired by Rust, implemen
 ## ✨ Features
 
 - ✅ `Some`, `None`, `Unwrap`, `UnwrapOr`, `IsSome`, `IsNone`
-- 🔁 Functional helpers: `Map`, `AndThen`, `OrElse`
+- 🔁 Functional helpers: `Map`, `AndThen`, `OrElse`, `Filter`, `Flatten`
 - 🧩 Pattern matching with `Match()`
-- 🔄 `ToResult()` and `ToResultPrimitive()` for conversions
-- 🧪 Fully tested with `go test`
-- ⚙️ Supports primitive and pointer-safe usage with `MaybePrimitive`
+- 🧠 `MatchIf()` enables condition-based matching like a functional switch
+- 🔄 `ToResult()` and `FromValue()`, `Try()` conversions
+- 🔍 `Tap()` for side-effect inspection
+- ⚙️ Works with both `Maybe[T]`, `MaybePrimitive[T]`, and `Result[T, E]`
+- 🧪 Supports primitive and pointer-safe usage with `MaybePrimitive`
 - 🧱 Built for Go 1.18+ (Generics)
 
 ---
