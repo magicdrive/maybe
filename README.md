@@ -151,7 +151,7 @@ func main() {
 	})
 
 	// Result[T, E] - MatchOkIf
-	r := result.Ok
+	r := result.Ok[int, error](11)
 	result.MatchOkIf(r, []result.MatchOkCase[int, error]{
 		{Cond: func(x int) bool { return x > 100 }, Then: func(x int) {
 			fmt.Println("Result: huge", x)
