@@ -2,6 +2,7 @@ package maybe_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/magicdrive/maybe"
@@ -74,5 +75,41 @@ func TestTryPrimitive(t *testing.T) {
 	none := maybe.TryPrimitive(failFn)
 	if none.IsSome() {
 		t.Errorf("expected NonePrimitive")
+	}
+}
+
+func TestFold(t *testing.T) {
+	m := maybe.Some(5)
+	result := maybe.Fold(m, func(x int) string {
+		return fmt.Sprintf("val=%d", x)
+	}, "none")
+	if result != "val=5" {
+		t.Errorf("expected val=5, got %s", result)
+	}
+
+	none := maybe.None[int]()
+	result2 := maybe.Fold(none, func(x int) string {
+		return "should not happen"
+	}, "none")
+	if result2 != "none" {
+		t.Errorf("expected 'none', got %s", result2)
+	}
+}
+
+func TestFoldPrimitive(t *testing.T) {
+	m := maybe.SomePrimitive(10)
+	result := maybe.FoldPrimitive(m, func(x int) string {
+		return fmt.Sprintf("prim=%d", x)
+	}, "none")
+	if result != "prim=10" {
+		t.Errorf("expected prim=10, got %s", result)
+	}
+
+	n := maybe.NonePrimitive[int]()
+	result2 := maybe.FoldPrimitive(n, func(x int) string {
+		return "should not happen"
+	}, "none")
+	if result2 != "none" {
+		t.Errorf("expected 'none', got %s", result2)
 	}
 }

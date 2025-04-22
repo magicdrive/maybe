@@ -2,6 +2,7 @@ package result_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/magicdrive/maybe/result"
@@ -99,5 +100,51 @@ func TestMatch(t *testing.T) {
 	)
 	if resultText != "err" {
 		t.Errorf("expected err branch")
+	}
+}
+
+func TestResultFold(t *testing.T) {
+	r := result.Ok[int, error](10)
+	s := result.Fold(r,
+		func(v int) string { return fmt.Sprintf("OK: %d", v) },
+		func(e error) string { return "ERR: " + e.Error() },
+	)
+	if s != "OK: 10" {
+		t.Errorf("expected 'OK: 10', got '%s'", s)
+	}
+
+	r2 := result.Err[int](errors.New("fail"))
+	s2 := result.Fold(r2,
+		func(v int) string { return "OK" },
+		func(e error) string { return "ERR: " + e.Error() },
+	)
+	if s2 != "ERR: fail" {
+		t.Errorf("expected 'ERR: fail', got '%s'", s2)
+	}
+}
+
+func TestResultTap(t *testing.T) {
+	r := result.Ok[int, error](10)
+	var logged int
+	r2 := result.Tap(r, func(v int) {
+		logged = v
+	})
+	if logged != 10 {
+		t.Errorf("expected Tap to log 10, got %d", logged)
+	}
+	if r2.Unwrap() != 10 {
+		t.Errorf("result should still be 10")
+	}
+
+	rErr := result.Err[int, error](errors.New("fail"))
+	logged = 0
+	r3 := result.Tap(rErr, func(v int) {
+		logged = 999
+	})
+	if logged != 0 {
+		t.Errorf("expected Tap to not execute on Err")
+	}
+	if r3.UnwrapErr().Error() != "fail" {
+		t.Errorf("expected Err unchanged")
 	}
 }

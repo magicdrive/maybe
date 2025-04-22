@@ -20,72 +20,89 @@ Type-safe optional values and result types for Go — inspired by Rust, implemen
 
 ## 🚀 Example Usage
 
+### 🧪 Overview: Maybe, MaybePrimitive, and Result
+
+See Also [example/main.go](https://github.com/magicdrive/maybe/blob/main/example/main.go)
+
 ```go
 package main
 
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/magicdrive/maybe"
 	"github.com/magicdrive/maybe/result"
 )
 
-func divide(a, b int) result.Result[int, error] {
-	if b == 0 {
-		return result.Err[int](errors.New("division by zero"))
-	}
-	return result.Ok[int](a / b)
-}
-
 func main() {
-	// Maybe
-	m := maybe.Some(42)
-	val := maybe.Map(m, func(x int) string {
+	fmt.Println("=== Maybe ===")
+	// Some → Map → Match
+	m := maybe.Some(10)
+	maybe.Map(m, func(x int) string {
 		return fmt.Sprintf("Value is %d", x)
+	}).Match(
+		func(v string) { fmt.Println("Mapped:", v) },
+		func() { fmt.Println("No value") },
+	)
+
+	// FromValue → Filter → Fold
+	mv := maybe.FromValue(99, true)
+	filtered := maybe.Filter(mv, func(x int) bool { return x > 50 })
+	folded := maybe.Fold(filtered,
+		func(x int) string { return fmt.Sprintf("Kept: %d", x) },
+		"Filtered out",
+	)
+	fmt.Println("Folded result:", folded)
+
+	// Try + Flatten
+	nested := maybe.Some(maybe.Some(123))
+	flat := maybe.Flatten(nested)
+	fmt.Println("Flattened:", flat.UnwrapOr(-1))
+
+	// Tap
+	maybe.Tap(flat, func(x int) {
+		fmt.Println("Tapped value:", x)
 	})
-	fmt.Println(val.UnwrapOr("None"))
 
-	// Maybe.FromValue
-	data := map[string]int{"x": 123}
-	v := maybe.FromValue(data["x"], true)
-	fmt.Println(v.UnwrapOr(0)) // -> 123
+	fmt.Println("\n=== MaybePrimitive ===")
+	// SomePrimitive → Filter → Map → Fold
+	mp := maybe.SomePrimitive(42)
+	filteredPrim := maybe.FilterPrimitive(mp, func(x int) bool { return x%2 == 0 })
+	mappedPrim := maybe.MapPrimitive(filteredPrim, func(x int) string {
+		return fmt.Sprintf("Even: %d", x)
+	})
+	foldedPrim := maybe.FoldPrimitive(mappedPrim,
+		func(s string) string { return "✅ " + s },
+		"none",
+	)
+	fmt.Println("MaybePrimitive result:", foldedPrim)
 
-	// Maybe.Try
-	parsed := maybe.Try(func() (int, error) {
+	// TryPrimitive
+	tried := maybe.TryPrimitive(func() (int, error) {
 		return strconv.Atoi("456")
 	})
-	fmt.Println(parsed.UnwrapOr(-1)) // -> 456
+	fmt.Println("TryPrimitive parsed:", tried.UnwrapOr(-1))
 
-	// Result
-	r := result.Map(divide(10, 2), func(x int) string {
-		return fmt.Sprintf("Success: %d", x)
-	})
-	fmt.Println(r.UnwrapOr("Error occurred"))
+	fmt.Println("\n=== Result ===")
+	// Try + Map + Fold
+	res := result.Try(
+		func() (int, error) { return divide(10, 2) },
+		func(e error) error { return fmt.Errorf("wrapped: %w", e) },
+	)
+	rmsg := result.Fold(res,
+		func(v int) string { return fmt.Sprintf("Divided: %d", v) },
+		func(e error) string { return "Error: " + e.Error() },
+	)
+	fmt.Println("Result fold:", rmsg)
+}
 
-	// Result.From
-	f, err := os.Open("file.txt")
-	fileResult := result.From(f, err)
-	fileResult.Match(
-		func(f *os.File) { fmt.Println("Opened:", f.Name()) },
-		func(e error) { fmt.Println("Open failed:", e) },
-	)
-
-	// Result.Try
-	rTry := result.Try(
-		func() (*os.File, error) {
-			return os.Open("missing.txt")
-		},
-		func(e error) error {
-			return fmt.Errorf("wrapped: %w", e)
-		},
-	)
-	rTry.Match(
-		func(f *os.File) { fmt.Println("Try opened:", f.Name()) },
-		func(e error) { fmt.Println("Try failed:", e) },
-	)
+func divide(x, y int) (int, error) {
+	if y == 0 {
+		return 0, errors.New("division by zero")
+	}
+	return x / y, nil
 }
 ```
 

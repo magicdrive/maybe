@@ -89,6 +89,34 @@ func AndThen[T any, U any](m Maybe[T], f func(T) Maybe[U]) Maybe[U] {
 	return f(m.value)
 }
 
+func Filter[T any](m Maybe[T], pred func(T) bool) Maybe[T] {
+	if m.IsSome() && pred(m.value) {
+		return m
+	}
+	return None[T]()
+}
+
+func Fold[T any, R any](m Maybe[T], someFn func(T) R, noneVal R) R {
+	if m.IsSome() {
+		return someFn(m.value)
+	}
+	return noneVal
+}
+
+func Tap[T any](m Maybe[T], f func(T)) Maybe[T] {
+	if m.IsSome() {
+		f(m.value)
+	}
+	return m
+}
+
+func Flatten[T any](m Maybe[Maybe[T]]) Maybe[T] {
+	if m.IsSome() {
+		return m.Unwrap()
+	}
+	return None[T]()
+}
+
 // --- MaybePrimitive ---
 
 func FromValuePrimitive[T Primitive](value T, ok bool) MaybePrimitive[T] {
@@ -180,3 +208,25 @@ func AndThenPrimitive[T Primitive, U Primitive](m MaybePrimitive[T], f func(T) M
 	}
 	return f(*m.value)
 }
+
+func FilterPrimitive[T Primitive](m MaybePrimitive[T], pred func(T) bool) MaybePrimitive[T] {
+	if m.IsSome() && pred(*m.value) {
+		return m
+	}
+	return NonePrimitive[T]()
+}
+
+func FoldPrimitive[T Primitive, R any](m MaybePrimitive[T], someFn func(T) R, noneVal R) R {
+	if m.IsSome() {
+		return someFn(*m.value)
+	}
+	return noneVal
+}
+
+func TapPrimitive[T Primitive](m MaybePrimitive[T], f func(T)) MaybePrimitive[T] {
+	if m.IsSome() {
+		f(*m.value)
+	}
+	return m
+}
+

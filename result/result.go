@@ -86,3 +86,17 @@ func (r Result[T, E]) Match(okFn func(T), errFn func(E)) {
 		errFn(r.err)
 	}
 }
+
+func Fold[T any, E error, R any](r Result[T, E], okFn func(T) R, errFn func(E) R) R {
+	if r.IsOk() {
+		return okFn(r.value)
+	}
+	return errFn(r.err)
+}
+
+func Tap[T any, E error](r Result[T, E], f func(T)) Result[T, E] {
+	if r.IsOk() {
+		f(r.value)
+	}
+	return r
+}
